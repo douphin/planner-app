@@ -1,0 +1,9 @@
+{
+    "backendUrl": "http://localhost:5000",
+    "apiKey": "your-api-key",
+    "header": "your-header",
+    "endpoint" : {
+        "users": "/api/users",
+        "events": "/api/events"
+    }
+}
