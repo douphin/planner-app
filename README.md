@@ -24,8 +24,6 @@
 ---
 Frontend derived from: [@Sloancb](https://github.com/Sloancb/OnlineShoppingApp/tree/main/frontend)
 
-Many of the UI components: https://mui.com/material-ui/
-
 
 
 
