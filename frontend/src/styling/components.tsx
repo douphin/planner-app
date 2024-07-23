@@ -10,13 +10,14 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Badge from '@mui/material/Badge';
 import Grid from '@mui/material/Grid';
-// Icons
+// icons
 import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';
 import EventIcon from '@mui/icons-material/Event';
+// API
 import {HandleLogout} from '../API/userAPI.ts';
 
-// Home bar
+// --- Home bar
 export default function HomeBar({children}) {
   const navigate = useNavigate()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -69,7 +70,7 @@ export default function HomeBar({children}) {
   );
 }
 
-// paper
+// --- paper
 export const Paper = styled(basePaper)(({ theme }) => ({
     padding: theme.spacing(2),
     elevation: 10,
@@ -77,7 +78,7 @@ export const Paper = styled(basePaper)(({ theme }) => ({
     textAlign: 'center', 
   }));
 
-// handle Login
+// --- handle Login
 export const EnsureLoggedIn = ({children}) =>{
   const jwt = localStorage.getItem("jwt")
   const navigate = useNavigate();
@@ -94,7 +95,7 @@ export const EnsureLoggedIn = ({children}) =>{
     ) 
 }
 
-//Message Handler
+// --- Message Handler
 export interface message{
   exists: boolean,
   type: "success" | "info" | "warning" | "error",
@@ -114,7 +115,7 @@ export const HandleMessages = ({children}:any) =>{
     if (reason === 'clickaway') {
       return;
     }
-    setMessage({...message, exists:false}) //The alert will switch before the snackbar leaves the page. So we must leave the the type consistent so the alert doesn't refresh
+    setMessage({...message, exists:false})  // the alert will switch before the snackbar leaves the page. So we must leave the the type consistent so the alert doesn't refresh
     sessionStorage.removeItem('msg')
   }
   //TODO: add a level messages system
@@ -147,7 +148,9 @@ export const HandleMessages = ({children}:any) =>{
     </div>
   )
 }
-// interfaces
+
+// ==================== --- ==================== //
+
 export interface EventTask {
   id : number,
   user_id: number,
@@ -157,10 +160,12 @@ export interface EventTask {
   end_time: string,
   status: string
 }
+
 export interface CalendarDay {
   date: number;
   isCurrentMonth: boolean;
 }
+
 export const delay = ms => new Promise(
   resolve => setTimeout(resolve, ms)
 );

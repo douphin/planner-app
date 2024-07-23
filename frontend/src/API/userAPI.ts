@@ -1,8 +1,7 @@
 import {request} from './Requests.ts'
 import config from '../config.json';
 import { NavigateFunction } from "react-router-dom";
-import { sendMessage } from '../styling/components.tsx';
-import { EventTask } from '../styling/components.tsx';
+import { sendMessage, EventTask } from '../styling/components.tsx';
 
 export interface loginData {
     name : string, 
@@ -19,6 +18,7 @@ export async function getLogin(data : loginData){
                 console.log("response", response)
                 sendMessage('success', "Login Successful")
                 localStorage.setItem("jwt", JSON.stringify(data["token"]))
+                window.sessionStorage.setItem("id", JSON.stringify(response.customer.id))
             }
             else {
                 console.log("data is null")
