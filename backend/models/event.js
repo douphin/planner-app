@@ -6,11 +6,9 @@ module.exports = (sequelize, DataTypes) => {
         },
         name: {
             type: DataTypes.STRING,
-            allowNull: false
         },
         description: {
             type: DataTypes.STRING,
-            //allowNull: false
         },
         start_time: {
             type: DataTypes.STRING,     // change to time and date
@@ -21,9 +19,6 @@ module.exports = (sequelize, DataTypes) => {
         status: {
             type: DataTypes.STRING,
         },
-    }, 
-    { 
-        timestamp: false 
     });
 
     return Event;

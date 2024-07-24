@@ -52,11 +52,18 @@ exports.updateEvent = async (req, res) => {
     
     try {
         // find by event id
-        const event = await Event.findByPk(eventId);
+        const event = await Event.findOne({ where: { id: eventId } });
+        //const event = await Event.findByPk(eventId);
         if (!event) {
             return res.status(404).json({ error: 'event not found' });
         }
-        await event.update( { user_id, name, description, start_time, end_time, status } );
+        await event.update( { 
+            name: name, 
+            description: description, 
+            start_time: start_time, 
+            end_time: end_time, 
+            status: status 
+        });
     
           res.status(200).json(event); 
     } catch (error) {
@@ -69,7 +76,7 @@ exports.updateEvent = async (req, res) => {
 
 // --- GET event items for user
 exports.getEvents = async (req, res) => {
-  const userId = req.params.user_id;
+    const userId = req.params.user_id;
   try {
       const event_items = await Event.findAll({ where: { user_id: userId } });
 
@@ -95,14 +102,30 @@ exports.getAllEvents = async (req, res) => {
 
 // ==================== DELETE ==================== //
 
+// --- DELETE events by id
+exports.deleteEvent = async (req, res) => {
+    const eventId = req.params.id;
+    try {
+        // delete event
+        //const event = await Event.findOne({ where: { id: eventId } });
+        await Event.destroy({ where: { id: eventId } })
+
+        res.json();
+    } catch (error) {
+        console.error("Error deleting user events: ", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // --- DELETE all events for user
 exports.emptyEvents = async (req, res) => {
+    const userId = req.params.user_id;
     try {
         // find all events for useer
-        const event_items = await Event.findAll({ where: { user_id } });
-        await Event.destroy({ where: { user_id } })
+        //const event_items = await Event.findAll({ where: { user_id } });
+        await Event.destroy({ where: { user_id: userId } })
 
-        res.json(event_items);
+        res.json();
     } catch (error) {
         console.error("Error deleting user events: ", error);
         res.status(500).json({ error: error.message });
@@ -110,7 +133,7 @@ exports.emptyEvents = async (req, res) => {
 };
 
 // --- DELETE all events
-exports.deleteAllEvents = async (req, res) => {
+exports.deleteAll = async (req, res) => {
     try {
         await Event.destroy({ where: {} })
 

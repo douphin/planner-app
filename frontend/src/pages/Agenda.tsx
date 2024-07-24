@@ -1,136 +1,108 @@
 import React, { useEffect, useState } from 'react';
 import { request } from '../API/Requests.ts';
-import { postEvent } from '../API/userAPI.ts';
+import { postEvent, putEvent, getUserId, deleteEvent } from '../API/userAPI.ts';
 import config from '../config.json';                // API endpoints
 import { Box, TextField, Button } from '@mui/material';                // UI component for layout
-import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
-import { EnsureLoggedIn, EventTask } from '../styling/components.tsx';
+import { DataGrid, GridColDef, GridRowParams, GridRenderCellParams } from '@mui/x-data-grid';
+import { EnsureLoggedIn, sendMessage, eventItem, Item } from '../styling/components.tsx';
 import HomeBar from '../styling/components.tsx';
-import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 
 
 
+
+
+
+
+
+
 // TODO: change so that only user_id events will show (foreign keys and routes)
-// 
-
-// ------ edit event
-
-const handleAddEvent = async (event: EventTask) => {
-  let user_id = event.user_id
-  let name = event.name
-  let description = event.description
-  let start_time = event.start_time
-  let end_time = event.end_time
-  let status = event.status
-  try {
-    postEvent({ id: -1, user_id: 1, name, description, start_time, end_time, status })    
-      .then((eventAdded)=>{
-        if(eventAdded)
-          alert(`Updated event ${event.name}!`)
-        else 
-          alert("Failed to add event. Please try again.")
-    });
-  } catch (error) {
-    console.error("Error adding event:", error);
-    alert("Failed to add event. Please try again."); 
-  }
-};
 
 
+function EventsList() {
+    const [data, setData] = useState<eventItem[]>([]);
+    const [showNewRow, setShowNewRow] = useState(false);    // blank row for add new
+    
 
-//const Home: React.FC = () => {
-  function AgendaPage() {
-    const [data, setData] = useState<EventTask[]>([]);
-    const [showNewRow, setShowNewRow] = useState(false);
+    // -- get user id
+    let userId = getUserId();//window.sessionStorage.getItem('id');
+
+    // default new event 
+    const new_event: eventItem = { 
+        id: -1,
+        user_id: userId,
+        name: '', 
+        description: '', 
+        start_time: '', 
+        end_time: '', 
+        status: '' 
+    };
 
 
-  
-    // fetch event data when the component mounts
+    // -- fetch event data when the component mounts
     useEffect(() => {
-      // GET request to fetch events
-      request<EventTask[]>(config.endpoint.events + '/', 'GET')
-      .then((response) => {
-        setData(response);              // update state with the fetched data
-      });
+        request<eventItem[]>(config.endpoint.events + `/fetchEvents/${userId}`, 'GET')
+        .then((response) => {
+            setData(response);    // update state with the fetched data
+        });
     }, []);
 
-    const new_event: EventTask = { 
-      id: -1,     // or some temporary value
-      user_id: 1,   // fix to actually get id
-      name: '', 
-      description: '', 
-      start_time: '', 
-      end_time: '', 
-      status: '' 
-    };
 
-    /*
-    // ----- columns to display events
-    const columns: GridColDef<EventTask>[] = [
-      { field: 'name', headerName: 'Name', width: 150, editable:true },
-      { field: 'start_time', headerName: 'start', width: 150, editable:true },
-      { field: 'end_time', headerName: 'end', width: 150, editable:true },
-      { field: 'description', headerName: 'Description', width: 150, editable:true },
-      { field: 'status', headerName: 'Status', width: 150, editable:true },
-      // edit event button
-      { field: 'actions',
-        type: 'actions',
-        width: 150,
-        getActions: (params: GridRowParams<EventTask>) => [
-          <Button
-          variant="text"
-          startIcon={<EditCalendarIcon />}
-          onClick={() => {
-            if (params.row.id === -1) { // Check if it's a new event row
-              handleAddEvent(params.row);
-            } else {
-              handleEditEvent(params.row);
-            }
-          }}
-        >
-          {params.row.id === -1 ? 'Add Event' : 'Update'}  
-        </Button>
-        ]
-      },
-    ];
-*/
-    
-    const showAddEvent = () => {
-      setShowNewRow(true);
-    };
+    // -- show / hide Add Event row
+    const showAddEvent = () => { setShowNewRow(true) };
+    const hideAddEvent = () => { setShowNewRow(false) };
 
 
-
-
-    const handleSaveEvent = async (params: GridRowParams<EventTask>) => {
+    // -- handle save event data from grid + update display table data
+    const handleSaveEvent = async (params: GridRowParams<eventItem>) => {
       const { row } = params;
       try {
-        if (row.id === -1) {
-          // add new event
-          const newEvent = await request<EventTask>(config.endpoint.events, "POST", row);
-          setData((prevData) => [...prevData, newEvent]);
-        } else {
-          // update existing event
-          const updatedEvent = await request<EventTask>(`${config.endpoint.events}/${row.id}`, "PUT", row);
-          setData((prevData) =>
-            prevData.map((event) => (event.id === row.id ? updatedEvent : event))
-          );
-        }
+          if (row.id === -1) {          // add new event
+              const new_event = await postEvent(row);
+              if ( new_event ) {
+                  setData((prevData) => [...prevData, new_event]);
+                  row.id = new_event.id;
+              } else {
+                  sendMessage('error', "Add event failed")
+              }
+
+          } else {                      // update existing event
+              const updated_event = await putEvent(row);
+              if ( updated_event ) {
+                  //setData((prevData) => prevData.map((event) => (event.id === row.id ? updated_event : event)));
+              } else {
+                  sendMessage('error', "Update event failed")
+              }
+          }
+          // hide Add Event row and reset new_event
+          hideAddEvent();
+          new_event.name = '';
+          new_event.description = '';
+          new_event.start_time = '';
+          new_event.end_time = '';
+          new_event.status = '';
       } catch (error) {
-        console.error("Error saving event:", error);
+          console.error("Error saving event:", error);
       }
+  };
+
+
+      // -- handle delete event   
+    const handleDeleteEvent = async (params: GridRowParams<eventItem>) => {
+        const { row } = params;
+        try {
+            await deleteEvent(row);
+        } catch (error) {
+            sendMessage('error', "Delete event failed")
+            console.error("Error deleting event:", error);
+        }
+        sendMessage('success', "Delete event success")
     };
-    
-    /*
-    const [name, setName] = useState('');
-    const [start_time, setStart] = useState('');
-    const [end_time, setEnd] = useState('');
-    const [description, setDescription] = useState('');
-    const [status, setStatus] = useState('');
-*/
-    const event_columns: GridColDef<EventTask>[] = [
+
+
+    // -- event grid compenent
+    const event_columns: GridColDef<eventItem>[] = [
       {
         field: "name",
         headerName: "Name",
@@ -165,7 +137,7 @@ const handleAddEvent = async (event: EventTask) => {
                 value: e.target.value,
               })
             }
-            type="datetime-local"
+            type="datetime-local"   // datetime selector
             autoFocus
           />
         ),
@@ -185,7 +157,7 @@ const handleAddEvent = async (event: EventTask) => {
                 value: e.target.value,
               })
             }
-            type="datetime-local"
+            type="datetime-local"   // datetime selector
             autoFocus
           />
         ),
@@ -207,10 +179,10 @@ const handleAddEvent = async (event: EventTask) => {
             }
             autoFocus
             multiline
-            maxRows={4} // allow for multiline input
+            maxRows={4}     // allow for multiline input
           />
         ),
-      },
+      },/*
       {
         field: "status",
         headerName: "Status",
@@ -229,13 +201,13 @@ const handleAddEvent = async (event: EventTask) => {
             autoFocus
           />
         ),
-      },
+      },*/
       // add event button
       {
         field: "actions",
         type: "actions",
         width: 150,
-        getActions: (params: GridRowParams<EventTask>) => [
+        getActions: (params: GridRowParams<eventItem>) => [
           <Button
             variant="text"
             startIcon={<EditCalendarIcon />}
@@ -248,25 +220,38 @@ const handleAddEvent = async (event: EventTask) => {
             }}
           >
             {params.row.id === -1 ? "Add Event" : "Update"}
-          </Button>,
+          </Button>
+        ],
+      },
+      {
+        field: 'delete',
+        headerName: '',
+        type: "actions",
+        getActions: (params: GridRowParams<eventItem>) => [
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => handleDeleteEvent(params)}
+            >
+              Delete
+            </Button>
         ],
       },
     ];
-    
 
 
-
+    // -- update rows in data grid
     const handleProcessRowUpdate = (updatedRow, originalRow) => {
-      request<EventTask>(config.endpoint.events +'/', 'POST', updatedRow)
-      .then(async (savedEvent: EventTask) => { // Type the response as EventTask
+      request<eventItem>(config.endpoint.events +'/', 'POST', updatedRow)
+      .then(async (savedEvent: eventItem) => {        // type the response as Event
           console.log("event saved", savedEvent);
-  
+        
           // refresh the event data after update
           try {
-              const refreshedEvents = await request<EventTask[]>(config.endpoint.events + '/', 'GET');
-              setData(refreshedEvents); // update state with the fetched data
+              const refreshedEvents = await request<eventItem[]>(config.endpoint.events + `/fetchEvents/${userId}`, 'GET');
+              setData(refreshedEvents);   // update state with fetched data
           } catch (error) {
-              console.error("Error refreshing events:", error);
+              console.error("Error refreshing events: ", error);
           }
       })
       .catch((error) => {
@@ -277,48 +262,89 @@ const handleAddEvent = async (event: EventTask) => {
   };
 
 
-      
-      return (
-          <div >
-            <EnsureLoggedIn>
-              <HomeBar>
-                <div className="content">
-                  <Button variant="outlined" 
-                    startIcon={<AddBoxIcon/>} 
-                    onClick={showAddEvent}
-                    sx={{
-                      color: "black", 
-                      "&:active": {       // clicked
-                        backgroundColor: "black",
-                      }
+    // -- render Agenda page
+    return (     
+      <div>
+        <Button variant="outlined"    // Add Event button
+          startIcon={<AddBoxIcon/>} 
+          onClick={showAddEvent}
+          sx={{
+            color: "black", 
+            "&:active": { backgroundColor: "black" }
+          }}>
+          Add Event
+        </Button>    
+        <div>
+        <Box sx={{ 
+            width: '70%',
+            padding: 5, 
+            maxHeight: 10, 
+            boxSizing: 'border-box',
+          }}>
+          <DataGrid                     // Event data grid
+                rows={showNewRow ? [...data, new_event] : data}
+                columns={event_columns}
+                autoHeight
+                initialState={{
+                pagination: {
+                    paginationModel: {
+                    pageSize: 10,
+                    },
+                },
+                }}
+                pageSizeOptions={[5]}
+                editMode="row"
+                processRowUpdate={handleProcessRowUpdate}
+                checkboxSelection
+                disableRowSelectionOnClick
+            />
+          </Box>
+        </div>      
+      </div>  
+    );
+};
+
+
+
+
+
+
+
+function AgendaPage() {
+    // -- render Agenda page
+    return (
+      <div>
+        <EnsureLoggedIn>
+          <HomeBar>
+            <div className="content">
+                <EventsList />
+
+                { /* weather stuff */ }
+                <Box sx={{ 
+                    display: 'flex',  
+                    justifyContent: 'flex-end', 
+                    width: '99%', 
+                  }}>
+                    <Box sx={{ 
+                      width: '30%',   
+                      padding: 5, 
+                      maxHeight: 10, 
+                      boxSizing: 'border-box', 
                     }}>
-                    Add Event
-                  </Button>                
-                  <Box sx={{ padding: 5, maxHeight: 10 }}>
-                  <DataGrid
-                        rows={showNewRow ? [...data, new_event] : data}
-                        columns={event_columns}
-                        autoHeight
-                        initialState={{
-                        pagination: {
-                            paginationModel: {
-                            pageSize: 10,
-                            },
-                        },
-                        }}
-                        pageSizeOptions={[5]}
-                        editMode="row"
-                        processRowUpdate={handleProcessRowUpdate}
-                        checkboxSelection
-                        disableRowSelectionOnClick
-                    />
-                  </Box>
-                </div>
-              </HomeBar>
-            </EnsureLoggedIn>
-          </div>
-        );
-      };
-  export default AgendaPage;
+                        {[12].map((elevation) => (
+                          <Item key={elevation} elevation={elevation}>
+                            {`Weather stuff`}
+                          </Item>
+                        ))}
+                    </Box>
+                </Box>
+            </div>
+          </HomeBar>
+        </EnsureLoggedIn>
+      </div>
+);
+};
+
+export default AgendaPage;
     
     

@@ -12,8 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         password: {
             type: DataTypes.STRING,
             allowNull: false
-        },
-    }, { timestamp: false 
+        }
     });
     return User;
 };

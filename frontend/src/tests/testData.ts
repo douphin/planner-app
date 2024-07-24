@@ -1,10 +1,16 @@
-import { EventTask } from "../styling/components";
+//import { Event } from "../API/userAPI.ts";
 
-
+interface Event {
+    user_id: number,
+    name: string,
+    description: string,
+    start_time: string,
+    end_time: string,
+    status: string
+}
 // --- EVENTS { id, user_id, name, description, start_time, end_time, status }
-export const testEvents: EventTask[] = [
+export const testEvents: Event[] = [
     {
-        id: 1,
         user_id: 1,
         name: "Event 1",
         description: "Description 1",
@@ -13,7 +19,6 @@ export const testEvents: EventTask[] = [
         status: "status 1"
     },
     {
-        id: 2,
         user_id: 1,
         name: "Event 2",
         description: "Description 2",
@@ -22,7 +27,6 @@ export const testEvents: EventTask[] = [
         status: "status 2"
     },
     {
-        id: 3,
         user_id: 1,
         name: "Event 3",
         description: "Description 3",
@@ -31,7 +35,6 @@ export const testEvents: EventTask[] = [
         status: "status 3"
     },
     {
-        id: 4,
         user_id: 1,
         name: "Event 4",
         description: "Description 4",
@@ -40,7 +43,6 @@ export const testEvents: EventTask[] = [
         status: "status 4"
     },
     {
-        id: 5,
         user_id: 1,
         name: "Event 5",
         description: "Description 5",

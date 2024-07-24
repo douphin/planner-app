@@ -14,6 +14,7 @@ function LoginPage() {
         .then((loggedIn)=>{
             setLoading(false)
             if(loggedIn)
+                window.sessionStorage.setItem('user', name)
                 navigate('/')
         })
     }
@@ -46,7 +47,7 @@ function LoginPage() {
                 <Button onClick={handleLogin}>Login</Button>
             </div>
             <br/>
-            <Typography>Don't have an account? {<Link to={'../Register'}>Click here!</Link>}</Typography>
+            <Typography>{<Link to={'../Register'}>Create new account</Link>}</Typography>
             </Paper>
         </div>
     );

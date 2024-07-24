@@ -17,10 +17,6 @@ app.use('/api/events', eventRoutes);
 
 
 
-// TODO: add foreign keys to relations, add tasks model probably?
-
-
-
 const { User, Event } = require('./models');
 app.get('/', async (req, res) => {
     try {
@@ -85,8 +81,7 @@ app.get('/', async (req, res) => {
                 <td>${item.status}</td>
           </tr>`;
           });
-      html += `</table>`
-     html += `
+      html += `</table>
           </body>
         </html>
       `;
