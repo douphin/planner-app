@@ -1,39 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { request } from '../API/Requests.ts';
 import { postEvent, putEvent, getUserId, deleteEvent } from '../API/userAPI.ts';
-import config from '../config.json';                // API endpoints
-import { Box, TextField, Button } from '@mui/material';                // UI component for layout
-import { DataGrid, GridColDef, GridRowParams, GridRenderCellParams } from '@mui/x-data-grid';
+import config from '../config.json';
 import { EnsureLoggedIn, sendMessage, eventItem, Item } from '../styling/components.tsx';
 import HomeBar from '../styling/components.tsx';
-import EditCalendarIcon from '@mui/icons-material/EditCalendar';
-import AddBoxIcon from '@mui/icons-material/AddBox';
-import { FullFeaturedCrudGrid } from '../styling/tasksComponents.tsx';
-
+// MUI components 
+import { DataGrid, GridColDef, GridRowsProp, GridRowModesModel, GridRowModes, GridToolbarContainer, GridActionsCellItem,
+  GridEventListener, GridRowId, GridRowModel, GridRowEditStopReasons, GridRowParams, GridSlots, } from '@mui/x-data-grid';
+import { randomCreatedDate, randomId } from '@mui/x-data-grid-generator';
+import { Box, Button } from '@mui/material';
+// icons
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
-import {
-  GridRowsProp,
-  GridRowModesModel,
-  GridRowModes,
-  GridToolbarContainer,
-  GridActionsCellItem,
-  GridEventListener,
-  GridRowId,
-  GridRowModel,
-  GridRowEditStopReasons,
-  GridSlots,
-} from '@mui/x-data-grid';
-import {
-  randomCreatedDate,
-  randomId,
-  randomArrayItem,
-} from '@mui/x-data-grid-generator';
 
-let userId = getUserId();   // get user id
+
+const userId = getUserId();     // user id for current session
 
 
 interface EditToolbarProps {
@@ -65,21 +49,7 @@ function EditToolbar(props: EditToolbarProps) {
 }
 
 
-
-
 function AgendaPage() {
-  /*
-  const [data, setData] = useState<eventItem[]>([]);
-  let userId = getUserId();
-
-	// -- fetch event data when the component mounts
-	useEffect(() => {
-		request<eventItem[]>(config.endpoint.events + `/fetchEvents/${userId}`, 'GET')
-		.then((response) => {
-			setData(response);    // update state with the fetched data
-		});
-	}, []);
-  */
   const [rows, setRows] = useState<GridRowsProp>([]);
   const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
 
@@ -97,7 +67,7 @@ function AgendaPage() {
                       end_time: randomCreatedDate(),  //formatDate(event.end_time), 
                       status: event.status,
                   }));
-                  setRows(newRows); // update rows directly
+                  setRows(newRows);
               } else {
                   // handle error: Unexpected response format
               }
@@ -207,7 +177,6 @@ function AgendaPage() {
           request( config.endpoint.events + '/add', 'POST', eventRow )
           .then((response) => {
             sendMessage('success', `Added event!`)
-            //sendMessage('success', `Added ${editedRow.name}!`)
             newRow.eid = response.id;
             const updatedRow = { ...newRow, isNew: false }; 
           })
@@ -230,31 +199,6 @@ function AgendaPage() {
     }
   };
 
-
-  /*
-	const processRowUpdate = (newRow: GridRowModel) => {
-		request<eventItem>(config.endpoint.events +'/', 'POST', newRow)
-		.then(async (savedEvent: eventItem) => {        // type the response as Event
-			console.log("event saved", savedEvent);
-		  
-			// refresh the event data after update
-			try {
-				const refreshedEvents = await request<eventItem[]>(config.endpoint.events + `/fetchEvents/${userId}`, 'GET');
-				setRows(refreshedEvents);   // update state with fetched data
-			} catch (error) {
-				console.error("Error refreshing events: ", error);
-			}
-		})
-		.catch((error) => {
-			console.log("error", error);
-		});
-
-		const updatedRow = { ...newRow, isNew: false };
-		setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
-		return updatedRow;
-	};
-  //*/
-
 	const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
 		setRowModesModel(newRowModesModel);
 	};
@@ -265,14 +209,14 @@ function AgendaPage() {
 		{
 			field: 'start_time',
 			headerName: 'Start',
-			type: 'date',
+			type: 'dateTime',
 			width: 100,
 			editable: true,
 		},
 		{
 			field: 'end_time',
 			headerName: 'End',
-			type: 'date',
+			type: 'dateTime',
 			width: 100,
 			editable: true,
 		},
@@ -339,11 +283,10 @@ function AgendaPage() {
           <HomeBar>
             <div className="content">
                 {/* <EventsList /> */}
-                {/*<FullFeaturedCrudGrid data={data}/>*/}
                 <Box
                   sx={{
                     height: 500,
-                    width: '70%',
+                    width: '65%',
                     '& .actions': {
                     color: 'text.secondary',
                     },
