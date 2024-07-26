@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { request } from '../API/Requests.ts';
 import { postEvent, putEvent, getUserId, deleteEvent } from '../API/userAPI.ts';
 import config from '../config.json';
-import { EnsureLoggedIn, sendMessage, eventItem, Item } from '../styling/components.tsx';
+import { EnsureLoggedIn, sendMessage, eventItem, Item, formatDateString } from '../styling/components.tsx';
 import HomeBar from '../styling/components.tsx';
 // MUI components 
 import { DataGrid, GridColDef, GridRowsProp, GridRowModesModel, GridRowModes, GridToolbarContainer, GridActionsCellItem,
@@ -63,8 +63,8 @@ function AgendaPage() {
                       user_id: userId,
                       name: event.name,
                       description: event.description,
-                      start_time: randomCreatedDate(), //formatDate(event.start_time), 
-                      end_time: randomCreatedDate(),  //formatDate(event.end_time), 
+                      start_time: formatDateString(event.start_time), //randomCreatedDate(), //formatDate(event.start_time), 
+                      end_time: formatDateString(event.end_time), //randomCreatedDate(),  //formatDate(event.end_time), 
                       status: event.status,
                   }));
                   setRows(newRows);
@@ -104,31 +104,17 @@ function AgendaPage() {
 				status: editedRow.status
 			};
 
-			if (editedRow.isNew) {
-				// POST new event to the backend
-				request( config.endpoint.events + '/add', 'POST', eventRow )
-				.then((response) => {
-					sendMessage('success', `Added event!`)
-					//sendMessage('success', `Added ${editedRow.name}!`)
-					editedRow.eid = response.id;
-          const updatedRow = { ...editedRow, isNew: false }; 
-				})
-				.catch((errorMessage) => {
-					sendMessage('error', "Add event failed: " + errorMessage)
-					console.log("error", errorMessage);
-				});
-			} else {
-				// PUT updated event to the backend
-				sendMessage('success', `Added ${editedRow.eid}!`)
-				await request( config.endpoint.events + `/update/${editedRow.eid}`, 'PUT', eventRow )
-				.then((response) => {
-					sendMessage('success', `Updated event!`)
-				})
-				.catch((errorMessage) => {     
-					sendMessage('error', "Update event failed: " + errorMessage)
-					console.log("error", errorMessage);
-				});
-			}
+      // PUT updated event to the backend
+      sendMessage('success', `Added ${editedRow.eid}!`)
+      await request( config.endpoint.events + `/update/${editedRow.eid}`, 'PUT', eventRow )
+      .then((response) => {
+        sendMessage('success', `Updated event!`)
+      })
+      .catch((errorMessage) => {     
+        sendMessage('error', "Update event failed: " + errorMessage)
+        console.log("error", errorMessage);
+      });
+			
 			setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
 		} catch (error) {
 			sendMessage('error', "Update event Failed:")
@@ -282,7 +268,7 @@ function AgendaPage() {
         <EnsureLoggedIn>
           <HomeBar>
             <div className="content">
-                {/* <EventsList /> */}
+                {/* Events List */}
                 <Box
                   sx={{
                     height: 500,

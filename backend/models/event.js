@@ -12,9 +12,11 @@ module.exports = (sequelize, DataTypes) => {
         },
         start_time: {
             type: DataTypes.STRING,     // change to time and date
+            //type: DataTypes.DATETIME,
         },
         end_time: {
             type: DataTypes.STRING,     // change to time and date
+            //type: DataTypes.DATETIME,
         },
         status: {
             type: DataTypes.STRING,

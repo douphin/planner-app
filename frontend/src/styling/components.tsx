@@ -163,7 +163,9 @@ export interface eventItem {
   name: string,
   description: string,
   start_time: string,
+  //start_time: Date,
   end_time: string,
+  //end_time: Date,
   status: string
 }
 
@@ -173,19 +175,17 @@ export interface CalendarDay {
 }
 
 
-export function formatDateString(dateString) {
-    const date = new Date(dateString);
-    
-    const options: Intl.DateTimeFormatOptions = {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-    };
+export function formatDateString(dateString): Date | null {
+    if (!dateString) {
+        return null;  //new Date();    // Return current date for null or undefined inputs
+    }
 
-    return new Intl.DateTimeFormat('en-US', options).format(date);
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+        return new Date();    // return current date for invalid dates *
+    }
+
+    return date;    // return parsed date if valid
 }
 
 
