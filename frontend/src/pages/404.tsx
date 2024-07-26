@@ -18,7 +18,7 @@ const NotFoundPage: React.FC = () => {
                 variant="contained"
                 color="primary"
                 onClick={() => {
-                    // Handle button click event
+                    // handle button click event
                     navigate('/');
                 }}
             >

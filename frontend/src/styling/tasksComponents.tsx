@@ -27,7 +27,6 @@ import {
 } from '@mui/x-data-grid';
 import {
   randomCreatedDate,
-  randomTraderName,
   randomId,
   randomArrayItem,
 } from '@mui/x-data-grid-generator';
@@ -51,38 +50,39 @@ const initialRows: GridRowsProp = [
 */
 
 interface EditToolbarProps {
-  setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
-  setRowModesModel: (
-    newModel: (oldModel: GridRowModesModel) => GridRowModesModel,
-  ) => void;
-}
-
-function EditToolbar(props: EditToolbarProps) {
-  const { setRows, setRowModesModel } = props;
-
-  const handleClick = () => {
-    const id = randomId();
-    setRows((oldRows) => [...oldRows, { id, user_id: userId, name: '', description: '', isNew: true }]);
-    setRowModesModel((oldModel) => ({
-      ...oldModel,
-      [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
-    }));
-  };
-
-  return (
-    <GridToolbarContainer>
-      <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-        Add event
-      </Button>
-    </GridToolbarContainer>
-  );
-}
-
+	setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
+	setRowModesModel: (
+	  newModel: (oldModel: GridRowModesModel) => GridRowModesModel,
+	) => void;
+  }
+  
+  function EditToolbar(props: EditToolbarProps) {
+	const { setRows, setRowModesModel } = props;
+  
+	const handleClick = () => {
+	  const id = randomId();
+	  setRows((oldRows) => [...oldRows, { id, user_id: userId, name: '', description: '', start_time: '', end_time: '', status: '', isNew: true }]);
+	  setRowModesModel((oldModel) => ({
+		...oldModel,
+		[id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
+	  }));
+	};
+  
+	return (
+	  <GridToolbarContainer>
+		<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
+		  Add event
+		</Button>
+	  </GridToolbarContainer>
+	);
+  }
+  
 
 // ===============================================================================
 export function FullFeaturedCrudGrid(props: { data: eventItem[] } ) {
     const initialRows: GridRowsProp = props.data.map(event => ({
-        id: event.id,
+        id: randomId(),
+		eid: event.id,
         user_id: event.user_id,
         name: event.name,
         description: event.description,
@@ -91,7 +91,7 @@ export function FullFeaturedCrudGrid(props: { data: eventItem[] } ) {
         status: event.status,
     }));
 
-	const [rows, setRows] = React.useState(initialRows);
+	const [rows, setRows] = useState(initialRows);
 	const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
 	const [data, setData] = useState<eventItem[]>([]);
 
@@ -99,28 +99,100 @@ export function FullFeaturedCrudGrid(props: { data: eventItem[] } ) {
 		request<eventItem[]>(config.endpoint.events + `/fetchEvents/${userId}`, 'GET')
 		.then((response) => {
 			setData(response);    // update state with the fetched data
+			const row_data: GridRowsProp = data.map(event => ({
+				id: randomId(),
+				eid: event.id,
+				user_id: event.user_id,
+				name: event.name,
+				description: event.description,
+				start_time: randomCreatedDate(),	//formatDate(event.startTime), // Format date if needed
+				end_time: randomCreatedDate(),		//formatDate(event.endTime),     // Format date if needed
+				status: event.status,
+			}));
+			setRows(row_data)
 		});
 	}, []);
+
 
 
 	// --------------
 	const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
 		if (params.reason === GridRowEditStopReasons.rowFocusOut) {
-		event.defaultMuiPrevented = true;
+			event.defaultMuiPrevented = true;
 		}
 	};
 
 	const handleEditClick = (id: GridRowId) => () => {
 		setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
 	};
-
+	/*
 	const handleSaveClick = (id: GridRowId) => () => {
 		setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
 	};
+	*/
+	const handleSaveClick = (params: GridRowParams) => async () => { 
+		const id = params.id;
+		try {
+			const editedRow = params.row;
+			if (!editedRow) return; 	// handle case where row isn't found
 
+			const eventRow = {
+				//id: editedRow.id,
+				user_id: editedRow.user_id,
+				name: editedRow.name,
+				description: editedRow.description,
+				start_time: editedRow.start_time,
+				end_time: editedRow.end_time,
+				status: editedRow.status
+			};
+
+			if (editedRow.isNew) {
+				// POST new event to the backend
+				request( config.endpoint.events + '/add', 'POST', eventRow )
+				.then((response) => {
+					sendMessage('success', `Added ${response.id}!`)
+					//sendMessage('success', `Added ${editedRow.name}!`)
+					editedRow.eid = response.id;
+				})
+				.catch((errorMessage) => {
+					sendMessage('error', "Add event failed: " + errorMessage)
+					console.log("error", errorMessage);
+				});
+			} else {
+				// PUT updated event to the backend
+				sendMessage('success', `Added ${editedRow.eid}!`)
+				await request( config.endpoint.events + `/update/${editedRow.eid}`, 'PUT', eventRow )
+				.then((response) => {
+					sendMessage('success', `Updated ${eventRow.name}!`)
+				})
+				.catch((errorMessage) => {     
+					sendMessage('error', "Update event failed: " + errorMessage)
+					console.log("error", errorMessage);
+				});
+			}
+			setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+		} catch (error) {
+			sendMessage('error', "Update event Failed:")
+		}
+	};
+
+	/*
 	const handleDeleteClick = (id: GridRowId) => () => {
 		setRows(rows.filter((row) => row.id !== id));
 	};
+	*/
+	const handleDeleteClick = (params: GridRowParams) => async () => {
+		const id = params.id;
+		try {
+		  await deleteEvent(id);
+		  	// update the UI after successful deletion
+		  	setRows(rows.filter((row) => row.id !== id));
+		} catch (error) {
+			sendMessage('error', "Deleted event Failed: " + error)
+		  	console.error('Error deleting event:', error);
+		}
+	};
+
 
 	const handleCancelClick = (id: GridRowId) => () => {
 		setRowModesModel({
@@ -130,18 +202,78 @@ export function FullFeaturedCrudGrid(props: { data: eventItem[] } ) {
 
 		const editedRow = rows.find((row) => row.id === id);
 		if (editedRow!.isNew) {
-		setRows(rows.filter((row) => row.id !== id));
+			setRows(rows.filter((row) => row.id !== id));
 		}
 	};
 
 	const processRowUpdate = (newRow: GridRowModel) => {
+		request<eventItem>(config.endpoint.events +'/', 'POST', newRow)
+		.then(async (savedEvent: eventItem) => {        // type the response as Event
+			console.log("event saved", savedEvent);
+		  
+			// refresh the event data after update
+			try {
+				const refreshedEvents = await request<eventItem[]>(config.endpoint.events + `/fetchEvents/${userId}`, 'GET');
+				setData(refreshedEvents);   // update state with fetched data
+			} catch (error) {
+				console.error("Error refreshing events: ", error);
+			}
+		})
+		.catch((error) => {
+			console.log("error", error);
+		});
+
 		const updatedRow = { ...newRow, isNew: false };
 		setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
 		return updatedRow;
 	};
 
-	const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+	//const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+	const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => async () => {
 		setRowModesModel(newRowModesModel);
+		///*
+		try {
+			const editedRow = newRowModesModel;
+			if (!editedRow) return; 	// handle case where row isn't found
+
+			const eventRow = {
+				//id: editedRow.id,
+				user_id: editedRow.user_id,
+				name: editedRow.name,
+				description: editedRow.description,
+				start_time: editedRow.start_time,
+				end_time: editedRow.end_time,
+				status: editedRow.status
+			};
+
+			if (editedRow.isNew) {
+				// POST new event to the backend
+				request( config.endpoint.events + '/add', 'POST', eventRow )
+				.then((response) => {
+					sendMessage('success', `Added ${editedRow.name}!`)
+					editedRow.eid = response.id;
+				})
+				.catch((errorMessage) => {
+					sendMessage('error', "Add event failed: " + errorMessage)
+					console.log("error", errorMessage);
+				});
+				//const new_id = await postEvent(eventRow); 	// update state after successful post
+			} else {
+				// PUT updated event to the backend
+				await request( config.endpoint.events + `/update/${editedRow.eid}`, 'PUT', eventRow )
+				.then((response) => {
+					sendMessage('success', `Updated ${eventRow.name}!`)
+				})
+				.catch((errorMessage) => {     
+					sendMessage('error', "Update event failed: " + errorMessage)
+					console.log("error", errorMessage);
+				});
+				//const returned_row = await putEvent(eventRow);
+			}
+		} catch (error) {
+			sendMessage('error', "Update event Failed:")
+		}
+		//*/
 	};
 
 	const columns: GridColDef[] = [
@@ -170,58 +302,59 @@ export function FullFeaturedCrudGrid(props: { data: eventItem[] } ) {
 			valueOptions: ['complete', 'on hold', 'to do', 'in progress'],
 		},
 		{
-		field: 'actions',
-		type: 'actions',
-		headerName: 'Actions',
-		width: 100,
-		cellClassName: 'actions',
-		getActions: ({ id }) => {
-			const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
-
-			if (isInEditMode) {
-			return [
+			field: 'actions',
+			type: 'actions',
+			headerName: 'Actions',
+			width: 100,
+			cellClassName: 'actions',
+			getActions: (params: GridRowParams) => {		//getActions: ({ id }) => {
+				const id = params.id;
+				const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
+				if (isInEditMode) {
+				return [
+					<GridActionsCellItem
+					icon={<SaveIcon />}
+					label="Save"
+					sx={{
+						color: 'primary.main',
+					}}
+					onClick={handleSaveClick(params)}
+					/>,
+					<GridActionsCellItem
+					icon={<CancelIcon />}
+					label="Cancel"
+					className="textPrimary"
+					onClick={handleCancelClick(id)}
+					color="inherit"
+					/>,
+				];
+				}
+	
+				return [
 				<GridActionsCellItem
-				icon={<SaveIcon />}
-				label="Save"
-				sx={{
-					color: 'primary.main',
-				}}
-				onClick={handleSaveClick(id)}
+					icon={<EditIcon />}
+					label="Edit"
+					className="textPrimary"
+					onClick={handleEditClick(id)}
+					color="inherit"
 				/>,
 				<GridActionsCellItem
-				icon={<CancelIcon />}
-				label="Cancel"
-				className="textPrimary"
-				onClick={handleCancelClick(id)}
-				color="inherit"
+					icon={<DeleteIcon />}
+					label="Delete"
+					onClick={handleDeleteClick(params)}
+					color="inherit"
 				/>,
-			];
-			}
-
-			return [
-			<GridActionsCellItem
-				icon={<EditIcon />}
-				label="Edit"
-				className="textPrimary"
-				onClick={handleEditClick(id)}
-				color="inherit"
-			/>,
-			<GridActionsCellItem
-				icon={<DeleteIcon />}
-				label="Delete"
-				onClick={handleDeleteClick(id)}
-				color="inherit"
-			/>,
-			];
-		},
-		},
+				];
+			},
+			},
 	];
+
 
 	return (
 		<Box
 		sx={{
 			height: 500,
-			width: '100%',
+			width: '70%',
 			'& .actions': {
 			color: 'text.secondary',
 			},
@@ -396,7 +529,7 @@ const event_columns: GridColDef<eventItem>[] = [
 
 
 
-
+/*
 function EventsList() {
     const [data, setData] = useState<eventItem[]>([]);
     const [showNewRow, setShowNewRow] = useState(false);    // blank row for add new
@@ -537,3 +670,4 @@ function EventsList() {
       </div>  
     );
 };
+*/

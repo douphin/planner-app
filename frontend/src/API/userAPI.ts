@@ -2,7 +2,6 @@ import {request} from './Requests.ts'
 import config from '../config.json';
 import { NavigateFunction } from "react-router-dom";
 import { sendMessage, eventItem } from '../styling/components.tsx';
-//import user from '../../../backend/models/user.js';
 import { all } from 'axios';
 
 // ==================== LOG IN ==================== //
@@ -181,50 +180,15 @@ export async function putEvent(e: eventItem): Promise<eventItem | null>  {
 
 
 // --- DELETE event
-export async function deleteEvent(e) {
-    sendMessage('success', `Deleted ${e.id}!`)
+export async function deleteEvent(id: number) {
     // delete event
-    await request( config.endpoint.events + `/del/${e.id}`, 'DELETE')
+    await request( config.endpoint.events + `/del/${id}`, 'DELETE')
     .then((response) => {
-        sendMessage('success', `Deleted ${e.name}!`)
+        sendMessage('success', `Deleted ${response.name}!`)
     })
     .catch((errorMessage) => {
         console.log("error", errorMessage);            
-        sendMessage('error', "Deleted event Failed:" + errorMessage)
+        sendMessage('error', "Delete event Failed:" + errorMessage)
     });
 };
 
-
-
-/*
-
-{ field: 'name', headerName: 'Name', width: 180, editable: true },
-{
-  field: 'description',
-  headerName: 'Description',
-  width: 180,
-  editable: true,
-},
-{
-  field: 'start_time',
-  headerName: 'Start',
-  //type: 'date',
-  width: 100,
-  editable: true,
-},
-{
-  field: 'end_time',
-  headerName: 'End',
-  //type: 'date',
-  width: 100,
-  editable: true,
-},
-{
-  field: 'status',
-  headerName: 'Status',
-  width: 150,
-  editable: true,
-  type: 'singleSelect',
-  valueOptions: ['complete', 'on hold', 'to do', 'in progress'],
-},
-*/
