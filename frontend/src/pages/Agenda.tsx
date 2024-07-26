@@ -8,12 +8,23 @@ import { EnsureLoggedIn, sendMessage, eventItem, Item } from '../styling/compone
 import HomeBar from '../styling/components.tsx';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import AddBoxIcon from '@mui/icons-material/AddBox';
-import { EventsList, FullFeaturedCrudGrid } from '../styling/tasksComponents.tsx';
+import { FullFeaturedCrudGrid } from '../styling/tasksComponents.tsx';
 
 
 
 
 function AgendaPage() {
+  const [data, setData] = useState<eventItem[]>([]);
+  let userId = getUserId();
+
+	// -- fetch event data when the component mounts
+	useEffect(() => {
+		request<eventItem[]>(config.endpoint.events + `/fetchEvents/${userId}`, 'GET')
+		.then((response) => {
+			setData(response);    // update state with the fetched data
+		});
+	}, []);
+
     // -- render Agenda page
     return (
       <div>
@@ -21,7 +32,7 @@ function AgendaPage() {
           <HomeBar>
             <div className="content">
                 {/* <EventsList /> */}
-                <FullFeaturedCrudGrid />
+                <FullFeaturedCrudGrid data={data}/>
 
                 { /* weather stuff */ }
                 <Box sx={{ 

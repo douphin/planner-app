@@ -119,8 +119,6 @@ export async function getEventCount(): Promise<number> {
 };
 
 
-
-
 export interface Event {
     user_id: number,
     name: string,
@@ -131,7 +129,7 @@ export interface Event {
   }
 
 // --- POST event
-export async function postEvent(e: eventItem): Promise<eventItem | null> {
+export async function postEvent(e: eventItem): Promise<number> {
     //{ user_id: e.user_id, name: e.name, description: e.description, start_time: e.start_time, end_time: e.end_time, status: e.status }
     const new_event : Event = { 
         user_id: e.user_id, 
@@ -150,9 +148,9 @@ export async function postEvent(e: eventItem): Promise<eventItem | null> {
     })
     .catch((errorMessage) => {
         console.log("error", errorMessage);            
-        return null;
+        return -1;
     });
-    return e;
+    return e.id;
 };
 
 
@@ -183,7 +181,7 @@ export async function putEvent(e: eventItem): Promise<eventItem | null>  {
 
 
 // --- DELETE event
-export async function deleteEvent(e: eventItem) {
+export async function deleteEvent(e) {
     sendMessage('success', `Deleted ${e.id}!`)
     // delete event
     await request( config.endpoint.events + `/del/${e.id}`, 'DELETE')
@@ -197,3 +195,36 @@ export async function deleteEvent(e: eventItem) {
 };
 
 
+
+/*
+
+{ field: 'name', headerName: 'Name', width: 180, editable: true },
+{
+  field: 'description',
+  headerName: 'Description',
+  width: 180,
+  editable: true,
+},
+{
+  field: 'start_time',
+  headerName: 'Start',
+  //type: 'date',
+  width: 100,
+  editable: true,
+},
+{
+  field: 'end_time',
+  headerName: 'End',
+  //type: 'date',
+  width: 100,
+  editable: true,
+},
+{
+  field: 'status',
+  headerName: 'Status',
+  width: 150,
+  editable: true,
+  type: 'singleSelect',
+  valueOptions: ['complete', 'on hold', 'to do', 'in progress'],
+},
+*/
