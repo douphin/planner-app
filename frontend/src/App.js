@@ -5,6 +5,7 @@ import Home from './pages/Home.tsx';
 import LoginPage from './pages/Login.tsx';
 import RegisterPage from './pages/RegisterPage.tsx';
 import AgendaPage from './pages/Agenda.tsx';
+import WeatherPage from './pages/Weather.tsx';
 import NotFoundPage from './pages/404.tsx';
 import TestPage from './tests/testPage.tsx';
 import { HandleMessages } from './styling/components.tsx';
@@ -18,6 +19,7 @@ function App() {
             <Route path="/Agenda" element={<AgendaPage/>}/>
             <Route path="/Login" element={<LoginPage/>}/>
             <Route path="/Register" element={<RegisterPage/>}/>
+            <Route path="/Weather" element={<WeatherPage/>}/>
             <Route path="*" element={<NotFoundPage />} />
             <Route path="/test" element={<TestPage/>}/>
           </Routes>

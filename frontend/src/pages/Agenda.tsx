@@ -8,6 +8,7 @@ import { EnsureLoggedIn, sendMessage, eventItem, Item } from '../styling/compone
 import HomeBar from '../styling/components.tsx';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import AddBoxIcon from '@mui/icons-material/AddBox';
+import moment from 'moment';
 
 
 
@@ -304,9 +305,41 @@ function EventsList() {
     );
 };
 
+function WeatherData() {
+  const [weatherData, setweatherData] = useState(""); 
 
+  sessionStorage.setItem('weatherJSON', "");
 
+  useEffect(() => {
+    request(config.endpoint.weather +'/', 'GET')
+      .then((response) => {
+        try {
+            sessionStorage.setItem('weatherJSON', JSON.stringify(response));
+        }
+        catch (error) {
+          sendMessage('error', `error fetching weather data`)
+        }
 
+        let weatherJSON = JSON.parse(sessionStorage.getItem('weatherJSON')?.toString() + "");
+        console.log(weatherJSON.timelines);
+        let htmlString = " <ul>";
+
+        for (let i = 0; i < 6; i++) {
+
+          let Wdate = Date.parse((weatherJSON.timelines.daily[i].time).substring(0, 10));
+          let newWdate = moment(Wdate).format('dddd, MMMM Do');
+          var temperatureAvg = Math.round(32 + (9 / 5) * weatherJSON.timelines.daily[i].values.temperatureAvg);
+          htmlString += "<li>" + newWdate + ":  " + temperatureAvg + "&deg F" + "</li>";
+        }
+
+        htmlString += "</ul>";
+
+        setweatherData(htmlString);
+        
+      });
+  }, []);
+  return (<div dangerouslySetInnerHTML={{__html: weatherData}}></div>);
+};
 
 
 
@@ -333,7 +366,8 @@ function AgendaPage() {
                     }}>
                         {[12].map((elevation) => (
                           <Item key={elevation} elevation={elevation}>
-                            {`Weather stuff`}
+                            {`Weather Forecast`}                   
+                            <WeatherData/>
                           </Item>
                         ))}
                     </Box>

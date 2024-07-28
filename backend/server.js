@@ -5,6 +5,7 @@ const sequelize = require('./config/database');
 
 const userRoutes = require('./routes/userRoutes');
 const eventRoutes = require('./routes/eventRoutes');
+const weatherRoutes = require('./routes/weatherRoutes');
 
 
 const app = express();
@@ -14,6 +15,7 @@ app.use(bodyParser.json());
 
 app.use('/api/users', userRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/weather', weatherRoutes);
 
 
 

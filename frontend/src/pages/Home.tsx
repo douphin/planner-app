@@ -13,6 +13,7 @@ import { DateCalendar, LocalizationProvider } from '@mui/x-date-pickers';
 
 
 function CustomMonthLayout() {
+  console.log(new Date().getMonth.toString());
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <DateCalendar showDaysOutsideCurrentMonth fixedWeekNumber={6} />

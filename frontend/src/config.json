@@ -4,6 +4,7 @@
     "header": "your-header",
     "endpoint" : {
         "users": "/api/users",
-        "events": "/api/events"
+        "events": "/api/events",
+        "weather": "/api/weather"
     }
 }

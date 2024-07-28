@@ -17,6 +17,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import EventIcon from '@mui/icons-material/Event';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import UpcomingIcon from '@mui/icons-material/Upcoming';
+import WeatherIcon from '@mui/icons-material/WbSunny';
 // API
 import { HandleLogout } from '../API/userAPI.ts';
 
@@ -57,6 +58,11 @@ export default function HomeBar({children}) {
               </Grid>
               <Grid  item xs>
                   <div style ={{textAlign:'right'}}>
+                    <IconButton onClick={()=>{navigate('/Weather')}}>
+                      <Badge  badgeContent={0} color="secondary">
+                        <WeatherIcon fontSize ={"large"}/>
+                      </Badge>
+                    </IconButton>
                     <IconButton onClick={()=>{navigate('/Agenda')}}>
                       <Badge  badgeContent={0} color="secondary">
                         <UpcomingIcon fontSize ={"large"}/>
