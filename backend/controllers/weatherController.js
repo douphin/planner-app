@@ -1,8 +1,12 @@
 const fs = require('fs');
 
 exports.weather = async (req, res) => {
-  try {
-    
+  //try {
+    fs.readFile("weatherJSON2.json", "utf8", function (err, data) {
+      pdata = JSON.parse(data);
+      res.json(pdata);
+    });
+    return;
     
     //if (req.data == "false"){
     //  res.json({ dataNeeded : false })
@@ -24,20 +28,20 @@ exports.weather = async (req, res) => {
     fs.writeFile("weatherJSON2.json", newJSON, function (err) {
       return;
     });
-    res.json({ data });
-  } catch (error) {
+    //res.json({ data });
+  //} catch (error) {
 
-    try
-    {
+    //try
+    //{
       fs.readFile("weatherJSON2.json", "utf8", function (err, data) {
         pdata = JSON.parse(data);
         res.json(pdata);
       });
-    }
-    catch (error)
-    {
-      console.error("Error getting weather in: ", error);
-      res.status(500).json({ error: error.message });
-  }
-  }
+    //}
+  // catch (error)
+  // {
+  //   console.error("Error getting weather in: ", error);
+  //   res.status(500).json({ error: error.message });
+  //
+ // }
 };
