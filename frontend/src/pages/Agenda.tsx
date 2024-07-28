@@ -322,23 +322,22 @@ function WeatherData() {
 
         let weatherJSON = JSON.parse(sessionStorage.getItem('weatherJSON')?.toString() + "");
         console.log(weatherJSON.timelines);
-        let htmlString = " <ul>";
+        let htmlString = "";
+        let nbspString = "";
+
+        for (let i = 0; i < 12; i++){  nbspString += "&nbsp";}
 
         for (let i = 0; i < 6; i++) {
 
           let Wdate = Date.parse((weatherJSON.timelines.daily[i].time).substring(0, 10));
           let newWdate = moment(Wdate).format('dddd, MMMM Do');
           var temperatureAvg = Math.round(32 + (9 / 5) * weatherJSON.timelines.daily[i].values.temperatureAvg);
-          htmlString += "<li>" + newWdate + ":  " + temperatureAvg + "&deg F" + "</li>";
+          htmlString += "<span>" + newWdate + ":  " + temperatureAvg + "&deg F" + "</span><br>";
         }
-
-        htmlString += "</ul>";
-
-        setweatherData(htmlString);
-        
+        setweatherData(htmlString);      
       });
   }, []);
-  return (<div dangerouslySetInnerHTML={{__html: weatherData}}></div>);
+  return (<div  dangerouslySetInnerHTML={{__html: weatherData}}></div>);
 };
 
 
